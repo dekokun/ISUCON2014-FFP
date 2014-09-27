@@ -1,2 +1,3 @@
 *.swp
 src/xhprof_link/link.txt
+xhprof_link/*
