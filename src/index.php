@@ -136,7 +136,7 @@ function ip_banned() {
 function attempt_login($login, $password) {
   $db = option('db_conn');
 
-  $stmt = $db->prepare('SELECT * FROM users WHERE login = :login');
+  $stmt = $db->prepare('SELECT id,salt,password_hash FROM users WHERE login = :login');
   $stmt->bindValue(':login', $login);
   $stmt->execute();
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -193,7 +193,7 @@ function last_login() {
 
   $db = option('db_conn');
 
-  $stmt = $db->prepare('SELECT ip,created FROM login_log WHERE succeeded = 1 AND user_id = :id ORDER BY id DESC LIMIT 2');
+  $stmt = $db->prepare('SELECT ip,created_at FROM login_log WHERE succeeded = 1 AND user_id = :id ORDER BY id DESC LIMIT 2');
   $stmt->bindValue(':id', $user['id']);
   $stmt->execute();
   $stmt->fetch();
