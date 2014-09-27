@@ -155,14 +155,12 @@ function attempt_login($login, $password) {
     login_log(true, $login, $user['id']);
     return array('user' => $user);
   }
-  elseif (!empty($user)) {
+  if (!empty($user)) {
     login_log(false, $login, $user['id']);
     return array('error' => 'wrong_password');
   }
-  else {
-    login_log(false, $login);
-    return array('error' => 'wrong_login');
-  }
+  login_log(false, $login);
+  return array('error' => 'wrong_login');
 }
 
 function current_user() {
