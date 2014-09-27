@@ -111,14 +111,25 @@ function login_log($succeeded, $login, $user_id=null) {
 function user_locked($user) {
   if (empty($user)) { return null; }
 
+  $config = option('config');
   $db = option('db_conn');
-  $stmt = $db->prepare('SELECT COUNT(1) AS failures FROM login_log WHERE user_id = :user_id AND id > IFNULL((select id from login_log where user_id = :user_id AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0)');
+  // $stmt = $db->prepare('SELECT COUNT(1) AS failures FROM login_log WHERE user_id = :user_id AND id > IFNULL((select id from login_log where user_id = :user_id AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0)');
+  $stmt = $db->prepare('SELECT succeeded FROM login_log WHERE user_id = :user_id ORDER BY id DESC LIMIT ' . $config['user_lock_threshold']);
   $stmt->bindValue(':user_id', $user['id']);
   $stmt->execute();
-  $log = $stmt->fetch(PDO::FETCH_ASSOC);
+  $record_count = 0;
+  while ($log = $stmt->fetch(PDO::FETCH_ASSOC))  {
+    $record_count += 1;
+    if ($log['succeeded'] == 1) {
+      return false;
+    }
+  }
+  if ($record_count < $config['user_lock_threshold']) {
+    return false;
+  }
 
-  $config = option('config');
-  return $config['user_lock_threshold'] <= $log['failures'];
+  return true;
+  // return $config['user_lock_threshold'] <= $log['failures'];
 }
 
 # FIXME
