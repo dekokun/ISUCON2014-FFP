@@ -172,7 +172,7 @@ function current_user() {
 
   $db = option('db_conn');
 
-  $stmt = $db->prepare('SELECT * FROM users WHERE id = :id');
+  $stmt = $db->prepare('SELECT id,login FROM users WHERE id = :id');
   $stmt->bindValue(':id', $_SESSION['user_id']);
   $stmt->execute();
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -193,7 +193,7 @@ function last_login() {
 
   $db = option('db_conn');
 
-  $stmt = $db->prepare('SELECT * FROM login_log WHERE succeeded = 1 AND user_id = :id ORDER BY id DESC LIMIT 2');
+  $stmt = $db->prepare('SELECT ip,created FROM login_log WHERE succeeded = 1 AND user_id = :id ORDER BY id DESC LIMIT 2');
   $stmt->bindValue(':id', $user['id']);
   $stmt->execute();
   $stmt->fetch();
