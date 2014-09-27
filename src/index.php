@@ -16,9 +16,9 @@ function configure() {
       'mysql:host=' . $host . ';port=' . $port. ';dbname=' . $dbname,
       $username,
       $password,
-      [ PDO::ATTR_PERSISTENT => true,
+      array( PDO::ATTR_PERSISTENT => true,
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET CHARACTER SET `utf8`',
-      ]
+      )
     );
   } catch (PDOException $e) {
     halt("Connection faild: $e");
@@ -27,10 +27,10 @@ function configure() {
 
   option('db_conn', $db);
 
-  $config = [
+  $config = array(
     'user_lock_threshold' => getenv('ISU4_USER_LOCK_THRESHOLD') ?: 3,
     'ip_ban_threshold' => getenv('ISU4_IP_BAN_THRESHOLD') ?: 10
-  ];
+  );
   option('config', $config);
 }
 
@@ -44,8 +44,53 @@ function get($key) {
 }
 
 function before() {
+ if(function_exists('xhprof_enable')){
+  xhprof_enable();    // start profiling
+ }
   layout('base.html.php');
 }
+
+function after($output){
+  //if(function_exists('xhprof_disable')){
+   // プロファイリングの終了
+   $xhprof_data = xhprof_disable();
+ 
+   $XHPROF_ROOT = '/home/isucon/webapp/php/src';
+   include_once $XHPROF_ROOT . "/xhprof_lib/utils/xhprof_lib.php";
+   include_once $XHPROF_ROOT . "/xhprof_lib/utils/xhprof_runs.php";
+ 
+   $xhprof_runs = new XHProfRuns_Default();
+   $paramator = 'xhprof';
+   $run_id = $xhprof_runs->save_run($xhprof_data, $paramator);
+ 
+   // URLを生成してリンクを作成
+   // echo "<a href=\"/xhprof/index.php?run=$run_id&source=$paramator\" target='_blank'>プロファイリング結果やで</a>";
+  // }
+
+  $data = "http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator;
+  $fp = fopen('./xhprof_link/link.txt', 'ab');
+
+if ($fp){
+    if (flock($fp, LOCK_EX)){
+        if (fwrite($fp,  $data) === FALSE){
+            //print('ファイル書き込みに失敗しました');
+        }else{
+            //print($data.'をファイルに書き込みました');
+        }
+
+        flock($fp, LOCK_UN);
+    }else{
+        //print('ファイルロックに失敗しました');
+    }
+}
+
+fclose($fp);
+
+
+
+  return $output;
+}
+
 
 function calculate_password_hash($password, $salt) {
   return hash('sha256', $password . ':' . $salt);
@@ -97,25 +142,25 @@ function attempt_login($login, $password) {
 
   if (ip_banned()) {
     login_log(false, $login, isset($user['id']) ? $user['id'] : null);
-    return ['error' => 'banned'];
+    return array('error' => 'banned');
   }
 
   if (user_locked($user)) {
     login_log(false, $login, $user['id']);
-    return ['error' => 'locked'];
+    return array('error' => 'locked');
   }
 
   if (!empty($user) && calculate_password_hash($password, $user['salt']) == $user['password_hash']) {
     login_log(true, $login, $user['id']);
-    return ['user' => $user];
+    return array('user' => $user);
   }
   elseif (!empty($user)) {
     login_log(false, $login, $user['id']);
-    return ['error' => 'wrong_password'];
+    return array('error' => 'wrong_password');
   }
   else {
     login_log(false, $login);
-    return ['error' => 'wrong_login'];
+    return array('error' => 'wrong_login');
   }
 }
 
