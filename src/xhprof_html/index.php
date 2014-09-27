@@ -48,8 +48,8 @@ $params = array('run'        => array(XHPROF_STRING_PARAM, ''),
                 'all'        => array(XHPROF_UINT_PARAM, 0),
                 );
 
+var_dump($params["source"]);
 // pull values of these params, and create named globals for each param
-xhprof_param_init($params);
 
 /* reset params to be a array of variable names to values
    by the end of this page, param should only contain values that need

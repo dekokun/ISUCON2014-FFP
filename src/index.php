@@ -60,14 +60,15 @@ function after($output){
    include_once $XHPROF_ROOT . "/xhprof_lib/utils/xhprof_runs.php";
  
    $xhprof_runs = new XHProfRuns_Default();
-   $paramator = 'xhprof';
+   $paramator = $_SERVER['QUERY_STRING'];
    $run_id = $xhprof_runs->save_run($xhprof_data, $paramator);
  
    // URLを生成してリンクを作成
    // echo "<a href=\"/xhprof/index.php?run=$run_id&source=$paramator\" target='_blank'>プロファイリング結果やで</a>";
   // }
 
-  $data = "http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator;
+  $data = $_SERVER['QUERY_STRING'] . ": http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator."\n";
+  // $data = "http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator."\n";
   $fp = fopen('./xhprof_link/link.txt', 'ab');
 
 if ($fp){
