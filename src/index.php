@@ -135,13 +135,24 @@ function user_locked($user) {
 # FIXME
 function ip_banned() {
   $db = option('db_conn');
-  $stmt = $db->prepare('SELECT COUNT(1) AS failures FROM login_log WHERE ip = :ip AND id > IFNULL((select id from login_log where ip = :ip AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0)');
+  // $stmt = $db->prepare('SELECT COUNT(1) AS failures FROM login_log WHERE ip = :ip AND id > IFNULL((select id from login_log where ip = :ip AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0)');
+  $config = option('config');
+  $stmt = $db->prepare('SELECT succeeded FROM login_log WHERE ip = :ip ORDER BY id DESC LIMIT ' . $config['ip_ban_threshold']);
   $stmt->bindValue(':ip', $_SERVER['REMOTE_ADDR']);
   $stmt->execute();
-  $log = $stmt->fetch(PDO::FETCH_ASSOC);
+  $record_count = 0;
+  while ($log = $stmt->fetch(PDO::FETCH_ASSOC))  {
+    $record_count += 1;
+    if ($log['succeeded'] == 1) {
+      return false;
+    }
+  }
+  if ($record_count < $config['ip_ban_threshold']) {
+    return false;
+  }
 
-  $config = option('config');
-  return $config['ip_ban_threshold'] <= $log['failures'];
+  return true;
+  // return $config['ip_ban_threshold'] <= $log['failures'];
 }
 
 function attempt_login($login, $password) {
