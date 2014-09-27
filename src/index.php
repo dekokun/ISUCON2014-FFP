@@ -16,9 +16,9 @@ function configure() {
       'mysql:host=' . $host . ';port=' . $port. ';dbname=' . $dbname,
       $username,
       $password,
-      array( PDO::ATTR_PERSISTENT => true,
+      [ PDO::ATTR_PERSISTENT => true,
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET CHARACTER SET `utf8`',
-      )
+      ]
     );
   } catch (PDOException $e) {
     halt("Connection faild: $e");
@@ -51,7 +51,7 @@ function before() {
 }
 
 function after($output){
-  //if(function_exists('xhprof_disable')){
+  if(function_exists('xhprof_disable')){
    // プロファイリングの終了
    $xhprof_data = xhprof_disable();
  
@@ -60,14 +60,13 @@ function after($output){
    include_once $XHPROF_ROOT . "/xhprof_lib/utils/xhprof_runs.php";
  
    $xhprof_runs = new XHProfRuns_Default();
-   $paramator = $_SERVER['QUERY_STRING'];
+   $paramator = 'xhprof';
    $run_id = $xhprof_runs->save_run($xhprof_data, $paramator);
  
    // URLを生成してリンクを作成
    // echo "<a href=\"/xhprof/index.php?run=$run_id&source=$paramator\" target='_blank'>プロファイリング結果やで</a>";
-  // }
 
-  $data = $_SERVER['QUERY_STRING'] . ": http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator."\n";
+  $data = $_SERVER['QUERY_STRING'] . ": http://54.64.191.83/xhprof/callgraph.php?run=" .$run_id ."&source=".$paramator."\n";
   // $data = "http://54.64.191.83/xhprof/index.php?run=" .$run_id ."&source=".$paramator."\n";
   $fp = fopen('./xhprof_link/link.txt', 'ab');
 
@@ -87,6 +86,7 @@ if ($fp){
 
 fclose($fp);
 
+  }
 
 
   return $output;

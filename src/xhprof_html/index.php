@@ -48,7 +48,7 @@ $params = array('run'        => array(XHPROF_STRING_PARAM, ''),
                 'all'        => array(XHPROF_UINT_PARAM, 0),
                 );
 
-var_dump($params["source"]);
+//var_dump($params["source"]);
 // pull values of these params, and create named globals for each param
 
 /* reset params to be a array of variable names to values
@@ -80,8 +80,9 @@ $vbbar = ' class="vbbar"';
 $vrbar = ' class="vrbar"';
 $vgbar = ' class="vgbar"';
 
-$xhprof_runs_impl = new XHProfRuns_Default();
+$xhprof_runs_impl = new XHProfRuns_Default('/tmp/xhprof/');
 
+var_dump($run);
 displayXHProfReport($xhprof_runs_impl, $params, $source, $run, $wts,
                     $symbol, $sort, $run1, $run2);
 
